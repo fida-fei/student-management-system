@@ -9,6 +9,7 @@ $result = $conn->query($sql);
 <html>
 <head>
     <title>Student Management System</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 

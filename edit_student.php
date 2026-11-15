@@ -27,6 +27,7 @@ $student = $result->fetch_assoc();
 <html>
 <head>
     <title>Edit Student</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
