@@ -1,8 +1,32 @@
 <?php
 include 'db.php';
 
-$sql = "SELECT * FROM students ORDER BY id DESC";
-$result = $conn->query($sql);
+$search = trim($_GET['search'] ?? '');
+
+if ($search !== '') {
+
+    $sql = "SELECT * FROM students
+            WHERE name LIKE ?
+            OR email LIKE ?
+            OR course LIKE ?
+            ORDER BY id DESC";
+
+    $stmt = $conn->prepare($sql);
+
+    $searchTerm = "%" . $search . "%";
+
+    $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
+
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+} else {
+
+    $sql = "SELECT * FROM students ORDER BY id DESC";
+    $result = $conn->query($sql);
+
+}
 ?>
 
 <!DOCTYPE html>
@@ -11,29 +35,41 @@ $result = $conn->query($sql);
     <title>Student Management System</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <h1>Student Management System</h1>
-<?php
-if (isset($_GET['status'])) {
 
-    if ($_GET['status'] === 'added') {
-        echo "<p class='success-message'>Student added successfully!</p>";
+    <?php
+    $countResult = $conn->query("SELECT COUNT(*) AS total FROM students");
+    $studentCount = $countResult->fetch_assoc()['total'];
+    ?>
+
+    <p class="student-count">
+        Total Students: <?php echo $studentCount; ?>
+    </p>
+
+    <?php
+    if (isset($_GET['status'])) {
+
+        if ($_GET['status'] === 'added') {
+            echo "<p class='success-message'>Student added successfully!</p>";
+        }
+
+        elseif ($_GET['status'] === 'updated') {
+            echo "<p class='success-message'>Student updated successfully!</p>";
+        }
+
+        elseif ($_GET['status'] === 'deleted') {
+            echo "<p class='success-message'>Student deleted successfully!</p>";
+        }
+
+        elseif ($_GET['status'] === 'duplicate') {
+            echo "<p class='error-message'>This email address is already registered!</p>";
+        }
+
     }
-
-    elseif ($_GET['status'] === 'updated') {
-        echo "<p class='success-message'>Student updated successfully!</p>";
-    }
-
-    elseif ($_GET['status'] === 'deleted') {
-        echo "<p class='success-message'>Student deleted successfully!</p>";
-    }
-    elseif ($_GET['status'] === 'duplicate') {
-    echo "<p class='error-message'>This email address is already registered!</p>";
-}
-
-}
-?>
+    ?>
 
     <h2>Add New Student</h2>
 
@@ -59,6 +95,21 @@ if (isset($_GET['status'])) {
 
     <h2>Student List</h2>
 
+    <form action="index.php" method="GET">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search by name, email or course..."
+            value="<?php echo htmlspecialchars($search); ?>"
+        >
+
+        <button type="submit">Search</button>
+
+        <a href="index.php">Clear</a>
+
+    </form>
+
     <table border="1" cellpadding="10">
 
         <tr>
@@ -70,26 +121,69 @@ if (isset($_GET['status'])) {
             <th>Action</th>
         </tr>
 
-        <?php while ($row = $result->fetch_assoc()) { ?>
+        <?php
+        if ($result->num_rows > 0) {
+
+            while ($row = $result->fetch_assoc()) {
+        ?>
 
         <tr>
             <td><?php echo $row['id']; ?></td>
+
             <td><?php echo htmlspecialchars($row['name']); ?></td>
+
             <td><?php echo htmlspecialchars($row['email']); ?></td>
+
             <td><?php echo htmlspecialchars($row['phone']); ?></td>
+
             <td><?php echo htmlspecialchars($row['course']); ?></td>
-           <td>
-    <a href="edit_student.php?id=<?php echo $row['id']; ?>">Edit</a>
 
-    |
+            <td>
 
-<a href="delete_student.php?id=<?php echo $row['id']; ?>"
-   onclick="return confirm('Are you sure you want to delete this student?');">
-   Delete
-</a></td>
+                <a
+                    class="edit-button"
+                    href="edit_student.php?id=<?php echo $row['id']; ?>"
+                >
+                    Edit
+                </a>
+
+                |
+
+                <form
+                    action="delete_student.php"
+                    method="POST"
+                    class="delete-form"
+                    onsubmit="return confirm('Are you sure you want to delete this student?');"
+                >
+
+                    <input
+                        type="hidden"
+                        name="id"
+                        value="<?php echo $row['id']; ?>"
+                    >
+
+                    <button type="submit" class="delete-button">
+                        Delete
+                    </button>
+
+                </form>
+
+            </td>
         </tr>
 
-        <?php } ?>
+        <?php
+            }
+
+        } else {
+        ?>
+
+        <tr>
+            <td colspan="6">No students found.</td>
+        </tr>
+
+        <?php
+        }
+        ?>
 
     </table>
 

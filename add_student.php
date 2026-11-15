@@ -15,6 +15,10 @@ if (empty($name) || empty($email)) {
     exit("Name and email are required.");
 }
 
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    exit("Please enter a valid email address.");
+}
+
 $sql = "INSERT INTO students (name, email, phone, course)
         VALUES (?, ?, ?, ?)";
 
