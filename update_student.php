@@ -25,7 +25,7 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("ssssi", $name, $email, $phone, $course, $id);
 
 if ($stmt->execute()) {
-    header("Location: index.php");
+header("Location: index.php?status=updated");
     exit();
 } else {
     echo "Error updating student: " . $stmt->error;

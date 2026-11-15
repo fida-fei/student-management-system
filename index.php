@@ -14,6 +14,26 @@ $result = $conn->query($sql);
 <body>
 
     <h1>Student Management System</h1>
+<?php
+if (isset($_GET['status'])) {
+
+    if ($_GET['status'] === 'added') {
+        echo "<p class='success-message'>Student added successfully!</p>";
+    }
+
+    elseif ($_GET['status'] === 'updated') {
+        echo "<p class='success-message'>Student updated successfully!</p>";
+    }
+
+    elseif ($_GET['status'] === 'deleted') {
+        echo "<p class='success-message'>Student deleted successfully!</p>";
+    }
+    elseif ($_GET['status'] === 'duplicate') {
+    echo "<p class='error-message'>This email address is already registered!</p>";
+}
+
+}
+?>
 
     <h2>Add New Student</h2>
 

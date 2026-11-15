@@ -23,9 +23,15 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("ssss", $name, $email, $phone, $course);
 
 if ($stmt->execute()) {
-    echo "Student added successfully!";
+    header("Location: index.php?status=added");
+    exit();
 } else {
-    echo "Error: " . $stmt->error;
+    if ($stmt->errno === 1062) {
+        header("Location: index.php?status=duplicate");
+        exit();
+    } else {
+        echo "Error adding student: " . $stmt->error;
+    }
 }
 
 $stmt->close();
